@@ -8,29 +8,29 @@ module ManageIQ
               @debug = true
               @handle = handle
             end
-        
+
             def main
               factory_config = @handle.get_state_var(:factory_config)
               raise "No factory config found. Aborting." if factory_config.nil?
-          
+
               task = @handle.root['service_template_transformation_plan_task']
               source_vm = task.source
-          
+
               # Get the virt-v2v start timestamp
               start_timestamp = task.get_option(:virtv2v_started_on)
 
               # Retrieve transformation host
               transformation_host = @handle.vmdb(:host).find_by(:id => task.get_option(:transformation_host_id))
-              
+
               # Setting directories and files path to track transformation
               base_directory = "/tmp/v2v_transformation"
               work_directory = "#{base_directory}/#{source_vm.name}"
               virtv2v_log = "#{work_directory}/#{start_timestamp}-virtv2v.log"
-         
-              result = Transformation::TransformationHosts::OVirtHost::Utils.remote_command(transformation_host, "ps -aux | grep \`cat #{work_directory}/virtv2v.pid\` | grep -v grep")
+
+              result = Transformation::TransformationHosts::OVirtHost::Utils.remote_command(transformation_host, "ps -aux | awk '{ print $2; }' | grep \`cat #{work_directory}/virtv2v.pid\`")
               raise result[:stderr] unless result[:success]
               virtv2v_process = result[:stdout]
-        
+
               result = Transformation::TransformationHosts::OVirtHost::Utils.remote_command(transformation_host, "cat '#{virtv2v_log}'")
               raise result[:stderr] unless result[:success]
               virtv2v_output = result[:stdout]
@@ -38,7 +38,7 @@ module ManageIQ
               # Retrieve disks array
               disks = task.get_option(:virtv2v_disks)
               disks = [disks] if disks.is_a?(Hash)
-              
+
               if virtv2v_process.empty?
                 task.set_option(:virtv2v_finished_on, Time.now.strftime('%Y%m%d_%H%M'))
                 virtv2v_status = virtv2v_output.lines.last

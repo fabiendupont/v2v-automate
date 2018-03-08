@@ -6,17 +6,17 @@ module ManageIQ
           def initialize(handle = $evm)
             @handle = handle
           end
-        
+
           def main
             factory_config = @handle.get_state_var(:factory_config)
             raise "No factory config found. Aborting." if factory_config.nil?
-              
+
             task = @handle.root['service_template_transformation_plan_task']
             source_vm = task.source
-            source_ems = source_vm.ext_management_system
-            destination_ems = task.transformation_destination(source_ems)
+            source_cluster = source_vm.ext_management_system
+            destination_ems = task.transformation_destination(source_cluster).ext_management_system
             raise "Invalid destination EMS type: #{destination_ems.emstype}. Aborting." unless destination_ems.emstype == "rhevm"
-          
+
             transformation_host = ManageIQ::Automate::Transformation::TransformationHosts::Common::Utils.get_transformation_host(destination_ems, 'vddk', factory_config)
             if transformation_host.nil?
               @handle.log(:info, "No transformation host available. Retrying.")
