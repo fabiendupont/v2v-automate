@@ -57,7 +57,7 @@ module ManageIQ
                 command += " ; install -o root -g kvm -m 0640 /dev/null #{work_directory}/.vddk_password"
                 command += " ; echo -n '#{source_ems.authentication_password}' > #{work_directory}/.vddk_password"
                 command += " ; export LIBGUESTFS_BACKEND=direct"
-                command += " ; nohup virt-v2v"
+                command += " ; nohup virt-v2v -v -x"
                 command += " -ic '#{ic_link}' -it vddk --password-file #{work_directory}/.vddk_password"
                 command += " --vddk-libdir /opt/vmware-vix-disklib-distrib --vddk-thumbprint #{vcenter_fingerprint}"
                 command += " -o rhv -os #{export_domain.location}"
