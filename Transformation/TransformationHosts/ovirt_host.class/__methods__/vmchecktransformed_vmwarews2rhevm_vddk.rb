@@ -41,7 +41,7 @@ module ManageIQ
 
               if virtv2v_process.empty?
                 task.set_option(:virtv2v_finished_on, Time.now.strftime('%Y%m%d_%H%M'))
-                virtv2v_status = virtv2v_output.lines.last
+                virtv2v_status = virtv2v_output.lines.select { |line| line =~ /^\[\s*\d+\.\d+\s*\]/ and not line =~ / debug / }.last
                 virtv2v_success = virtv2v_status.strip.include?('Finishing off')
                 if virtv2v_success
                   disks.each { |disk| disk[:percent] = 100 }
@@ -66,7 +66,7 @@ module ManageIQ
                 if converted_disks.empty?
                   @handle.set_state_var(:ae_state_progress, { 'message' => "Disks transformation is initializing.", 'percent' => 1 })
                 else
-                  disk_weight = 100.to_f / disks.length.to_f
+                  disk_weight = 100.0 / disks.length.to_f
                   percent = 0
                   converted_disks.each { |disk| percent += ( disk[:percent].to_f * disk_weight.to_f / 100.to_f ) }
                   message = "Converting disk #{converted_disks.length} / #{disks.length} [#{percent.round(2)}%]."
