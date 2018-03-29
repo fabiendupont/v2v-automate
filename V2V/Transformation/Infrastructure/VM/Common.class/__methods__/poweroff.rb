@@ -18,8 +18,8 @@ module ManageIQ
                 else
                   if task.get_option(:power_off)
                     @handle.log(:info, "VM '#{source_vm.name} is powered on. Let's shut it down.")
-                    if @handle.get_state_var(:vm_shutdown_in_progress).blank?
-                      source_vm.stop if @handle.root['ae_state_retries'].to_i > 5
+                    if @handle.state_var_exist?(:vm_shutdown_in_progress)
+                      source_vm.stop if @handle.root['ae_state_retries'].to_i > 10
                     else
                       source_vm.shutdown_guest
                       @handle.set_state_var(:vm_shutdown_in_progress, true)
