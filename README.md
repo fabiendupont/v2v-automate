@@ -18,7 +18,7 @@ There are two options to import the domain.
 ```
 # curl -o /tmp/v2v-automate-master.zip https://codeload.github.com/fdupont-redhat/v2v-automate/zip/master
 # cd /tmp/
-# unzip v2v-ansible-master.zip
+# unzip v2v-automate-master.zip
 # cd /var/www/miq/vmdb
 # bundle exec rake evm:automate:import DOMAIN=V2V IMPORT_DIR=/tmp/v2v-automate-master PREVIEW=false ENABLED=true
 ```
