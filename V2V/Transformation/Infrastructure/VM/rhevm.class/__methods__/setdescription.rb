@@ -10,12 +10,17 @@ module ManageIQ
               end
           
               def main
-                task = @handle.root['service_template_transformation_plan_task']
-                destination_vm = @handle.vmdb(:vm).find_by(:id => task.get_option(:destination_vm_id))
-                destination_ems = destination_vm.ext_management_system
+                begin
+                  task = @handle.root['service_template_transformation_plan_task']
+                  destination_vm = @handle.vmdb(:vm).find_by(:id => task.get_option(:destination_vm_id))
+                  destination_ems = destination_vm.ext_management_system
 
-                description = "Migrated by Cloudforms on #{Time.now}."
-                ManageIQ::Automate::Transformation::Infrastructure::VM::RedHat::Utils.new(destination_ems).vm_set_description(destination_vm, description)
+                  description = "Migrated by Cloudforms on #{Time.now}."
+                  ManageIQ::Automate::Transformation::Infrastructure::VM::RedHat::Utils.new(destination_ems).vm_set_description(destination_vm, description)
+                rescue Exception => e
+                  @handle.set_state_var(:ae_state_progress, { 'message' => e.message })
+                  raise
+                end
               end
             end
           end

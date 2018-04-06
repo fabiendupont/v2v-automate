@@ -5,3 +5,13 @@ module ManageIQ
         module VM
           module OpenStack
             class Utils
+
+
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
