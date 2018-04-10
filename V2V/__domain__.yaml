@@ -6,7 +6,7 @@ object:
     name: V2V
     description: 
     display_name: 
-    priority: 1
+    priority: 2
     enabled: true
     tenant_id: 1
     source: user
