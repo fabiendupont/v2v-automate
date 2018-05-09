@@ -4,12 +4,8 @@ module ManageIQ
       module TransformationHost
         module OVirtHost
           class VMTransform_vmwarews2rhevm_vddk
-            TRANSFORMATION_METHOD = "vddk".freeze
-            DESTINATION_OUTPUT_TYPES = { 'openstack' => 'local', 'rhevm' => 'rhv' }.freeze
-            DESTINATION_OUTPUT_FORMATS = { 'openstack' => 'raw', 'rhevm' => 'qcow2' }.freeze
-
             def initialize(handle = $evm)
-              @debug = true
+              @debug = false
               @handle = handle
             end
 
@@ -29,13 +25,6 @@ module ManageIQ
                 destination_storage = task.transformation_destination(source_vm.hardware.disks.select { |d| d.device_type == 'disk' }.first.storage)
                 raise "Invalid destination EMS type: #{destination_ems.emstype}. Aborting." unless destination_ems.emstype == "rhevm"
 
-#                @handle.log(:info, "Source VM: #{source_vm.inspect}")
-#                @handle.log(:info, "Source Cluster: #{source_cluster.inspect}")
-#                @handle.log(:info, "Source EMS: #{source_ems.inspect}")
-#                @handle.log(:info, "Destination Cluster: #{destination_cluster.inspect}")
-#                @handle.log(:info, "Destination EMS: #{destination_ems.inspect}")
-#                @handle.log(:info, "Destination Storage: #{destination_storage.inspect}")
-                
                 # Get or create the virt-v2v start timestamp
                 start_timestamp = task.get_option(:virtv2v_started_on) || Time.now.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -69,16 +58,6 @@ module ManageIQ
                   virtv2v_networks = [virtv2v_networks] if virtv2v_networks.is_a?(Hash)
                   @handle.log(:info, "Network mappings: #{virtv2v_networks}")
                   
-#                  wrapper_options = {
-#                    vm_name: source_vm.name,
-#                    transport_method: 'vddk',
-#                    vmware_fingerprint: Transformation::Infrastructure::VM::VMware::Utils.get_vcenter_fingerprint(source_ems),
-#                    vmware_uri: vmware_uri,
-#                    vmware_password: source_ems.authentication_password,
-#                    export_domain: export_domain.location,
-#                    source_disks: source_disks
-#                  }
-                
                   wrapper_options = {
                     vm_name: source_vm.name,
                     transport_method: 'vddk',
@@ -93,7 +72,7 @@ module ManageIQ
                     source_disks: source_disks,
                     network_mappings: virtv2v_networks
                   }
-                  @handle.log(:info, "JSON Input:\n#{JSON.pretty_generate(wrapper_options)}")
+                  @handle.log(:info, "JSON Input:\n#{JSON.pretty_generate(wrapper_options)}") if @debug
 
                   @handle.log(:info, "Connecting to #{transformation_host.name} as #{transformation_host.authentication_userid}") if @debug
                   @handle.log(:info, "Executing '/usr/bin/virt-v2v-wrapper.py'")
@@ -101,7 +80,7 @@ module ManageIQ
                   raise result[:stderr] unless result[:success]
 
                   # Record the wrapper files path
-                  @handle.log(:info, "Command stdout: #{result[:stdout]}")
+                  @handle.log(:info, "Command stdout: #{result[:stdout]}") if @debug
                   task.set_option(:virtv2v_wrapper, JSON.parse(result[:stdout]))
                 
                   # Record the status in the task object
